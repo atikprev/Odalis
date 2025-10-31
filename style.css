@@ -4,6 +4,13 @@
     box-sizing: border-box;
 }
 
+/* Make images responsive by default */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
 body {
     font-family: 'Georgia', 'Times New Roman', serif;
     background: linear-gradient(135deg, #fef6f9 0%, #fff5f8 50%, #fef0f5 100%);
@@ -11,24 +18,29 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    /* Remove default page padding so top/bottom images can touch edges */
+    padding: 0;
+    /* prevent decorative absolute elements from creating horizontal scroll */
+    overflow-x: hidden;
 }
 
 .container {
     position: relative;
     width: 100%;
-    max-width: 800px;
-    min-height: 600px;
+    max-width: 900px;
+    /* make container span full viewport height so bottom flower can align to bottom */
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 40px 20px;
+    /* no outer padding so flowers touch the page edges */
+    padding: 0;
 }
 
 .flores-top {
     width: 100%;
     text-align: center;
-    margin-bottom: 40px;
+    margin: 0; /* no space above or below the top flower */
 }
 
 .flores-top img {
@@ -36,18 +48,20 @@ body {
     max-width: 600px;
     height: auto;
     transform: scaleY(-1);
+    object-fit: contain;
 }
 
 .flores-bottom {
     width: 100%;
     text-align: center;
-    margin-top: 40px;
+    margin: 0; /* no space above or below the bottom flower */
 }
 
 .flores-bottom img {
     width: 100%;
     max-width: 600px;
     height: auto;
+    object-fit: contain;
 }
 
 .content {
@@ -56,7 +70,12 @@ body {
     align-items: center;
     justify-content: center;
     flex: 1;
-    padding: 40px 0;
+    /* internal padding so content doesn't touch flowers (keeps flowers flush to edges).
+       Use safe-area insets so content is readable on devices with notches. */
+    padding-top: calc(40px + env(safe-area-inset-top));
+    padding-bottom: calc(40px + env(safe-area-inset-bottom));
+    padding-left: 20px;
+    padding-right: 20px;
 }
 
 .manchas {
@@ -65,12 +84,12 @@ body {
     height: 200px;
     opacity: 0.6;
     z-index: 0;
-}
-
-.manchas img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+    /* use the decorative image as a background so it doesn't interfere with layout/text */
+    background-image: url('public/manchas.webp');
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+    pointer-events: none; /* decorative only */
 }
 
 .manchas-left {
@@ -89,10 +108,13 @@ body {
     position: relative;
     z-index: 1;
     text-align: center;
+    max-width: 92%;
+    padding: 0 10px;
 }
 
+/* Fluid typography for large headings */
 .title {
-    font-size: 120px;
+    font-size: clamp(48px, 9.5vw, 140px);
     font-weight: 400;
     font-style: italic;
     color: #b18397;
@@ -102,7 +124,7 @@ body {
 }
 
 .subtitle {
-    font-size: 100px;
+    font-size: clamp(36px, 8vw, 120px);
     font-weight: 400;
     font-style: italic;
     color: #b18397;
@@ -116,8 +138,9 @@ body {
 }
 
 .message-line {
-    font-size: 36px;
-    letter-spacing: 12px;
+    font-size: clamp(18px, 3.2vw, 42px);
+    /* letter-spacing scales down on small screens to avoid overflow */
+    letter-spacing: clamp(4px, 2.5vw, 12px);
     color: #b18397;
     font-weight: 300;
     margin: 8px 0;
@@ -167,12 +190,12 @@ body {
     }
 
     .title {
-        font-size: 70px;
+        font-size: clamp(40px, 9vw, 70px);
         margin-bottom: 15px;
     }
 
     .subtitle {
-        font-size: 60px;
+        font-size: clamp(30px, 8vw, 60px);
         margin-bottom: 40px;
     }
 
@@ -188,6 +211,57 @@ body {
 
     .content {
         padding: 30px 0;
+    }
+}
+
+/* Small screens: stack content vertically and simplify decorative images */
+@media screen and (max-width: 600px) {
+    .content {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 0;
+    }
+
+    /* Keep decorative manchas out of document flow (no space) and position them
+       absolute even on small screens so they don't push content. Adjust size
+       and placement so they don't overlap the text. */
+    .manchas {
+        position: absolute; /* does not occupy space */
+        width: 80px;
+        height: 80px;
+        opacity: 0.35;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    /* Place left and right manchas near the edges but still outside text flow */
+    .manchas-left {
+        left: 6px;
+        top: 10%;
+        transform: none;
+    }
+
+    .manchas-right {
+        right: 6px;
+        top: 10%;
+        transform: none scaleX(-1);
+    }
+
+    .flores-top img,
+    .flores-bottom img {
+        max-width: 90%;
+        height: auto;
+    }
+
+    /* Make the flower images full-bleed on small devices so they touch the viewport edges */
+    .flores-top img,
+    .flores-bottom img {
+        width: 100vw;
+        max-width: none;
+        margin-left: calc(-1 * (100vw - 100%)/2); /* center full-bleed when container is narrower */
+        margin-right: calc(-1 * (100vw - 100%)/2);
+        object-fit: cover;
     }
 }
 
